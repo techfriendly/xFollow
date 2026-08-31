@@ -1,0 +1,108 @@
+name: xfollow
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEFAULT_LOCALE: ${APP_DEFAULT_LOCALE:-es}
+      APP_SUPPORTED_LOCALES: ${APP_SUPPORTED_LOCALES:-es,ca}
+      AUTH_MODE: ${AUTH_MODE:-bearer}
+      API_AUTH_BEARER_TOKEN: ${API_AUTH_BEARER_TOKEN:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3101,http://127.0.0.1:3101}
+      POSTGRES_DSN: ${POSTGRES_DSN_DOCKER:-${POSTGRES_DSN:?Define POSTGRES_DSN or POSTGRES_DSN_DOCKER}}
+      XFOLLOW_DB_REQUIRED: ${XFOLLOW_DB_REQUIRED:-1}
+      XFOLLOW_DB_CONNECT_TIMEOUT: ${XFOLLOW_DB_CONNECT_TIMEOUT:-3}
+      XFOLLOW_INTEGRATIONS_ENABLED: ${XFOLLOW_INTEGRATIONS_ENABLED:-1}
+      OBJECT_STORAGE_ENDPOINT: ${OBJECT_STORAGE_ENDPOINT:-}
+      OBJECT_STORAGE_BUCKET: ${OBJECT_STORAGE_BUCKET:-xfollow}
+      OBJECT_STORAGE_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY:-}
+      OBJECT_STORAGE_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY:-}
+      OBJECT_STORAGE_REGION: ${OBJECT_STORAGE_REGION:-eu-west-1}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai_compatible}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_CONTEXT_WINDOW: ${LLM_CONTEXT_WINDOW:-128000}
+      LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-8192}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.2}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-300}
+      XFOLLOW_AI_WORKER_POLL_SECONDS: ${XFOLLOW_AI_WORKER_POLL_SECONDS:-3}
+      XFOLLOW_AI_RETRY_MAX_SECONDS: ${XFOLLOW_AI_RETRY_MAX_SECONDS:-300}
+      XFOLLOW_AI_SOURCE_MAX_CHARS: ${XFOLLOW_AI_SOURCE_MAX_CHARS:-12000}
+      XFOLLOW_AI_SOURCE_TOTAL_CHARS: ${XFOLLOW_AI_SOURCE_TOTAL_CHARS:-60000}
+      XFOLLOW_UPLOAD_MAX_BYTES: ${XFOLLOW_UPLOAD_MAX_BYTES:-26214400}
+    ports:
+      - "${XFOLLOW_API_PORT:-8101}:8100"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - postgres_shared
+    volumes:
+      - ./data:/app/data
+    command: ["sh", "-lc", "python -m xfollow_api.migrate && uvicorn xfollow_api.main:app --host 0.0.0.0 --port 8100"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_XFOLLOW_API_BASE_URL: ${NEXT_PUBLIC_XFOLLOW_API_BASE_URL:-http://localhost:8101}
+    restart: unless-stopped
+    environment:
+      XFOLLOW_WEB_PORT: 3000
+    ports:
+      - "${XFOLLOW_WEB_PORT:-3101}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      AUTH_MODE: ${AUTH_MODE:-bearer}
+      POSTGRES_DSN: ${POSTGRES_DSN_DOCKER:-${POSTGRES_DSN:?Define POSTGRES_DSN or POSTGRES_DSN_DOCKER}}
+      XFOLLOW_DB_REQUIRED: ${XFOLLOW_DB_REQUIRED:-1}
+      XFOLLOW_DB_CONNECT_TIMEOUT: ${XFOLLOW_DB_CONNECT_TIMEOUT:-3}
+      XFOLLOW_INTEGRATIONS_ENABLED: ${XFOLLOW_INTEGRATIONS_ENABLED:-1}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai_compatible}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_CONTEXT_WINDOW: ${LLM_CONTEXT_WINDOW:-128000}
+      LLM_MAX_OUTPUT_TOKENS: ${LLM_MAX_OUTPUT_TOKENS:-8192}
+      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.2}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-300}
+      XFOLLOW_AI_WORKER_POLL_SECONDS: ${XFOLLOW_AI_WORKER_POLL_SECONDS:-3}
+      XFOLLOW_AI_RETRY_MAX_SECONDS: ${XFOLLOW_AI_RETRY_MAX_SECONDS:-300}
+      XFOLLOW_AI_SOURCE_MAX_CHARS: ${XFOLLOW_AI_SOURCE_MAX_CHARS:-12000}
+      XFOLLOW_AI_SOURCE_TOTAL_CHARS: ${XFOLLOW_AI_SOURCE_TOTAL_CHARS:-60000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - postgres_shared
+    volumes:
+      - ./data:/app/data
+    command: ["python", "-m", "xfollow_api.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  postgres_shared:
+    external: true
+    name: ${XFOLLOW_POSTGRES_NETWORK:-procureai_default}
