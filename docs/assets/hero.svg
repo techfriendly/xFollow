@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">xFollow — Lo adjudicado se convierte en compromisos que puedes seguir.</title>
+  <desc id="desc">Del contrato firmado al cumplimiento demostrado.. Parte de xProcureAI, de TECH friendly.</desc>
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0b1224"/><stop offset="1" stop-color="#15233b"/></linearGradient><radialGradient id="glow"><stop stop-color="#34d399" stop-opacity=".2"/><stop offset="1" stop-color="#34d399" stop-opacity="0"/></radialGradient></defs>
+  <rect width="1200" height="420" rx="24" fill="url(#bg)"/>
+  <circle cx="1070" cy="160" r="280" fill="url(#glow)"/>
+  <path d="M930 68v282M1020 68v282M1110 68v282M900 120h240M900 210h240M900 300h240" stroke="#fff" stroke-opacity=".07"/>
+  <text x="56" y="58" fill="#34d399" font-family="Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="2">XPROCUREAI / 03 / EJECUCIÓN</text>
+  <text x="52" y="147" fill="#f8fafc" font-family="Arial, sans-serif" font-size="76" font-weight="700">xFollow</text>
+  <text x="56" y="213" fill="#f8fafc" font-family="Arial, sans-serif" font-size="26" font-weight="600">Lo adjudicado se convierte en compromisos que puedes seguir.</text>
+  <text x="56" y="253" fill="#b8c9df" font-family="Arial, sans-serif" font-size="20">Del contrato firmado al cumplimiento demostrado.</text>
+  <rect x="56" y="307" width="181" height="35" rx="17" fill="#34d399" fill-opacity=".13"/>
+  <text x="76" y="330" fill="#34d399" font-family="Arial, sans-serif" font-size="13" font-weight="700">OPEN SOURCE · APACHE 2.0</text>
+  <text x="268" y="330" fill="#cbd5e1" font-family="Arial, sans-serif" font-size="14">IA trazable. Control humano. Tus datos.</text>
+  <text x="56" y="389" fill="#8198b6" font-family="Arial, sans-serif" font-size="13" letter-spacing="1.5">TECH FRIENDLY / MIKA.tools</text>
+</svg>

@@ -1,0 +1,33 @@
+{
+  "name": "xfollow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Seguimiento inteligente de contratos públicos: obligaciones, alertas, evidencias y ejecución trazable. El módulo de control de xProcureAI.",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev:web",
+    "dev:web": "npm --workspace apps/web run dev",
+    "build": "npm --workspace apps/web run build",
+    "typecheck": "npm --workspace apps/web run typecheck",
+    "test": "npm run typecheck && npm run test:api",
+    "test:api": "XFOLLOW_FORCE_MEMORY=1 PYTHONPATH=apps/api python3 -m pytest apps/api/tests -q",
+    "api": "PYTHONPATH=apps/api uvicorn xfollow_api.main:app --reload --port ${XFOLLOW_API_PORT:-8100}",
+    "worker": "PYTHONPATH=apps/api python3 -m xfollow_api.worker"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0",
+    "python": ">=3.10"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/techfriendly/xFollow.git"
+  },
+  "homepage": "https://github.com/techfriendly/xFollow#readme",
+  "bugs": {
+    "url": "https://github.com/techfriendly/xFollow/issues"
+  }
+}
